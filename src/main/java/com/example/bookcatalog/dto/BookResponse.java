@@ -10,7 +10,10 @@ public record BookResponse(
         String author,
         String isbn,
         Integer publishedYear,
-        Instant createdAt
+        Instant createdAt,
+        String createdBy,
+        Instant updatedAt,
+        String updatedBy
 ) {
     public static BookResponse from(BookDO bookDO) {
         return new BookResponse(
@@ -19,7 +22,10 @@ public record BookResponse(
                 bookDO.getAuthor(),
                 bookDO.getIsbn(),
                 bookDO.getPublishedYear(),
-                bookDO.getCreatedAt()
+                bookDO.getCreatedAt(),
+                bookDO.getCreatedBy(),
+                bookDO.getUpdatedAt(),
+                bookDO.getUpdatedBy()
         );
     }
 }

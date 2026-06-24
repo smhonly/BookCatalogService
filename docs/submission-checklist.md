@@ -40,9 +40,9 @@ location / code / extension points).
       real `GlobalExceptionHandler`, real JSON serialization)
 - [x] All tests pass: `mvn verify` → `Tests run: 21, Failures: 0, Errors: 0`
 
-> Coverage: 93% instruction, 96% line, 75% branch.
+> Coverage: 87% instruction, 97% line, 75% branch.
 - [x] **JaCoCo 80% line-coverage gate wired and passing** (current
-      **93%** instruction coverage, **96%** line coverage; gate rule is on `LINE`)
+      **87%** instruction coverage, **97%** line coverage; gate rule is on `LINE`)
 
 **Evidence:**
 `src/test/java/com/example/bookcatalog/service/BookServiceTest.java`,

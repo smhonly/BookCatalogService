@@ -55,7 +55,10 @@ Response body shape:
       "author": "Frank Herbert",
       "isbn": "9780441172719",
       "publishedYear": 1965,
-      "createdAt": "2026-06-23T17:00:00Z"
+      "createdAt": "2026-06-23T17:00:00Z",
+      "createdBy": null,
+      "updatedAt": null,
+      "updatedBy": null
     }
   ],
   "pageable": { "pageNumber": 0, "pageSize": 20, "sort": { ... } },

@@ -128,6 +128,6 @@
 ## Coverage gap (honest note)
 
 As of writing this log, JaCoCo **is** wired in `pom.xml` (added in
-S9) with an 80% line-coverage gate. The build passes at **93%
-instruction coverage / 96% line coverage** (LINE gate rule),
+S9) with an 80% line-coverage gate. The build passes at **87%
+instruction coverage / 97% line coverage** (LINE gate rule),
 well above the threshold.

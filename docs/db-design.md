@@ -17,6 +17,10 @@ Table `books`:
 | `published_year` | `INT`       | yes      | —       | field `publishedYear` | Bean validation: `@Min(0)`.              |
 | `created_at`   | `TIMESTAMP`  | no       | —       | `@PrePersist`         | Set on first save, never updated.       |
 | `deleted`      | `BOOLEAN`    | no       | `FALSE` | `@SQLRestriction`      | Soft-delete flag. All queries filter `deleted = false`. |
+| `created_by`   | `VARCHAR(255)` | yes    | —       | field `createdBy`      | Who created the record. Not auto-set (no auth). |
+| `updated_by`   | `VARCHAR(255)` | yes    | —       | field `updatedBy`      | Who last updated the record. Not auto-set.       |
+| `updated_at`   | `TIMESTAMP`  | yes       | —       | `@PreUpdate`           | Set automatically on every update.               |
+| `version`      | `BIGINT`     | no        | `0`     | `@Version`             | Optimistic locking. Incremented by JPA on every update. |
 
 The Java field `publishedYear` is mapped to the column `published_year`
 by Spring Boot's default `SpringPhysicalNamingStrategy`
@@ -42,6 +46,10 @@ CREATE TABLE books (
     isbn            VARCHAR(20),
     published_year  INT,
     created_at      TIMESTAMP NOT NULL,
+    created_by      VARCHAR(255),
+    updated_at      TIMESTAMP,
+    updated_by      VARCHAR(255),
+    version         BIGINT DEFAULT 0 NOT NULL,
     deleted         BOOLEAN DEFAULT FALSE NOT NULL
 );
 ```
@@ -80,8 +88,9 @@ mapping, so you do not need to write it by hand.
 
 - No `users` table — auth was intentionally out of scope (see
   `docs/spec.md` "Out of scope").
-- No soft-delete column — deletes are hard, and the row goes away.
-- No audit columns other than `created_at` (no `updated_at`,
-  `created_by`, `updated_by`).
-- No version column for optimistic locking — concurrent edits are
-  last-write-wins, acceptable for a single-user homework CRUD.
+- **Soft delete** is now modeled — see the `deleted` column above.
+  `DELETE` sets a flag; rows are never physically removed.
+- Audit columns include `created_at`, `updated_at`, `created_by`,
+  `updated_by`.
+- **Optimistic locking** via `@Version` — see the `version` column above.
+  Concurrent edits produce an `OptimisticLockException`.
