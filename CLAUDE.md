@@ -9,6 +9,8 @@ assignment. The five requirements and how each is satisfied live in
 [`docs/spec.md`](docs/spec.md); the design patterns are documented in
 [`docs/design.md`](docs/design.md); the submission self-check is in
 [`docs/submission-checklist.md`](docs/submission-checklist.md).
+The API contract is specified in [`docs/api-design.md`](docs/api-design.md)
+and the database schema in [`docs/db-design.md`](docs/db-design.md).
 
 When working in this repo, respect these boundaries:
 
