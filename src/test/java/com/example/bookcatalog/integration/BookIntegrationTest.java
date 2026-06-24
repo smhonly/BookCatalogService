@@ -24,8 +24,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 /**
  * Full-stack integration test. Boots the Spring context (real H2, real JPA,
  * real JSON serialization, real exception handler) and drives the public API
- * over HTTP. Complements the slice tests in {@code BookDOControllerTest}
- * (which mock the service) and the unit tests in {@code BookDOServiceTest}
+ * over HTTP. Complements the slice tests in {@code BookControllerTest}
+ * (which mock the service) and the unit tests in {@code BookServiceTest}
  * (which mock the repository).
  */
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
@@ -72,11 +72,15 @@ class BookIntegrationTest {
         assertThat(updated.getStatusCode()).isEqualTo(HttpStatus.OK);
         assertThat(updated.getBody()).containsEntry("title", "Dune (1965)");
 
-        // Delete
+        // Delete (soft)
         ResponseEntity<Void> deleted = rest.exchange(
                 "/api/v1/books/" + id, HttpMethod.DELETE, HttpEntity.EMPTY, Void.class);
         assertThat(deleted.getStatusCode()).isEqualTo(HttpStatus.NO_CONTENT);
         assertThat(bookRepository.count()).isZero();
+
+        // Verify soft delete — GET returns 404, but row still exists in DB
+        ResponseEntity<Map> afterDelete = rest.getForEntity("/api/v1/books/" + id, Map.class);
+        assertThat(afterDelete.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
     }
 
     @Test
@@ -109,6 +113,20 @@ class BookIntegrationTest {
         assertThat(resp.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
         assertThat(resp.getBody()).containsEntry("status", 400);
         assertThat((String) resp.getBody().get("message")).contains("title");
+    }
+
+    @Test
+    void softDeleteAllowsIsbnReuse() {
+        // Create and delete a book
+        BookRequest req = new BookRequest("Dune", "Frank Herbert", "9780441172719", 1965);
+        ResponseEntity<Map> created = rest.postForEntity("/api/v1/books", req, Map.class);
+        Long id = ((Number) created.getBody().get("id")).longValue();
+
+        rest.exchange("/api/v1/books/" + id, HttpMethod.DELETE, HttpEntity.EMPTY, Void.class);
+
+        // Same ISBN should be reusable after soft delete
+        ResponseEntity<Map> recreated = rest.postForEntity("/api/v1/books", req, Map.class);
+        assertThat(recreated.getStatusCode()).isEqualTo(HttpStatus.CREATED);
     }
 
     @Test

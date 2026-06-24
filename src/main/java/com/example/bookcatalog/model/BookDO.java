@@ -7,19 +7,19 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.Table;
-import jakarta.validation.constraints.Min;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.Size;
+import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.hibernate.annotations.SQLRestriction;
 
 import java.time.Instant;
 
 @Entity
 @Table(name = "books")
+@SQLRestriction("deleted = false")
 @Getter
 @Setter
 @NoArgsConstructor
@@ -29,27 +29,26 @@ public class BookDO {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Setter(AccessLevel.NONE)
     private Long id;
 
-    @NotBlank
-    @Size(max = 200)
     @Column(nullable = false)
     private String title;
 
-    @NotBlank
-    @Size(max = 120)
     @Column(nullable = false)
     private String author;
 
-    @Size(max = 20)
-    @Column(unique = true)
+    @Column
     private String isbn;
 
-    @Min(0)
     private Integer publishedYear;
 
     @Column(nullable = false, updatable = false)
     private Instant createdAt;
+
+    @Builder.Default
+    @Column(nullable = false)
+    private boolean deleted = false;
 
     @PrePersist
     void onPersist() {

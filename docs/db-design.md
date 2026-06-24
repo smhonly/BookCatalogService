@@ -13,9 +13,10 @@ Table `books`:
 | `id`           | `BIGINT`     | no       | AUTO    | `@Id @GeneratedValue` | Primary key, identity-generated.         |
 | `title`        | `VARCHAR(200)` | no     | —       | `@Column(nullable=false)` | Bean validation: `@NotBlank @Size(max=200)`. |
 | `author`       | `VARCHAR(120)` | no     | —       | `@Column(nullable=false)` | Bean validation: `@NotBlank @Size(max=120)`. |
-| `isbn`         | `VARCHAR(20)`  | yes    | —       | `@Column(unique=true)`   | Unique when present. May be null.       |
+| `isbn`         | `VARCHAR(20)`  | yes    | —       | field `isbn`            | Uniqueness enforced by application (`assertIsbnUnique`). May be null. |
 | `published_year` | `INT`       | yes      | —       | field `publishedYear` | Bean validation: `@Min(0)`.              |
 | `created_at`   | `TIMESTAMP`  | no       | —       | `@PrePersist`         | Set on first save, never updated.       |
+| `deleted`      | `BOOLEAN`    | no       | `FALSE` | `@SQLRestriction`      | Soft-delete flag. All queries filter `deleted = false`. |
 
 The Java field `publishedYear` is mapped to the column `published_year`
 by Spring Boot's default `SpringPhysicalNamingStrategy`
@@ -24,7 +25,7 @@ by Spring Boot's default `SpringPhysicalNamingStrategy`
 ## Indexes
 
 - **Primary key** on `id` — engine default.
-- **Unique** on `isbn` — implicit from `@Column(unique = true)`.
+- **No unique constraint on `isbn`** — soft-deleted rows would block ISBN reuse. Uniqueness is enforced at the application layer by `BookService.assertIsbnUnique()`, which queries only non-deleted books via `@SQLRestriction`.
 
 No secondary indexes. At homework scale a `findAll()` paged scan is
 fast enough; if the row count grew, the obvious next index would be
@@ -41,7 +42,7 @@ CREATE TABLE books (
     isbn            VARCHAR(20),
     published_year  INT,
     created_at      TIMESTAMP NOT NULL,
-    CONSTRAINT uk_books_isbn UNIQUE (isbn)
+    deleted         BOOLEAN DEFAULT FALSE NOT NULL
 );
 ```
 

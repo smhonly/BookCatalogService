@@ -47,10 +47,8 @@ public class BookService {
 
     @Transactional
     public void delete(Long id) {
-        if (!bookRepository.existsById(id)) {
-            throw new ResourceNotFoundException("Book", id);
-        }
-        bookRepository.deleteById(id);
+        BookDO bookDO = get(id);
+        bookDO.setDeleted(true);
     }
 
     /**

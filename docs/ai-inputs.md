@@ -88,6 +88,8 @@
 
 ### S9 — JaCoCo + integration test (2026-06-23, this session)
 
+## Skills referenced
+
 | Field      | Value                                                                                                                                                                                                                                                                |
 | ---------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Trigger    | User asked to wire JaCoCo with 80% threshold, push unit tests above 80%, and "help check" integration tests.                                                                                                                                                          |
@@ -107,8 +109,25 @@
   were not invoked on this codebase; the senior-dev review in S4 was
   done inline.
 
+### S10 — Code review & fixes (2026-06-24)
+
+| Field      | Value                                                                                                                                                                                                   |
+| ---------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Trigger    | Automated code review identified naming inconsistencies, test gaps, and doc issues.                                                                                                                      |
+| Changes    | Renamed test classes `BookDOServiceTest`/`BookDOControllerTest` → `BookServiceTest`/`BookControllerTest` (matching the classes they test); added `deleteThrowsWhenMissing` to service test and `deleteReturns404WhenMissing` to controller test; restricted `setId` on `BookDO` with `@Setter(AccessLevel.NONE)`; removed redundant validation annotations from entity; fixed `CLAUDE.md` command examples and `README.md`/docs `bookDO` references. |
+| Outcome    | Cleaner naming, better test coverage (19 tests), tighter entity.                                                                                                                                        |
+
+### S11 — Soft delete (2026-06-24)
+
+| Field      | Value                                                                                                                                                                                                                                               |
+| ---------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Trigger    | User requested `DELETE` sets a `deleted` flag instead of hard-removing rows.                                                                                                                                                                          |
+| Changes    | Added `deleted` boolean field on `BookDO` with `@SQLRestriction("deleted = false")` to auto-filter all queries; changed `BookService.delete()` to `get(id)` + `setDeleted(true)`; removed `@Column(unique = true)` on ISBN so soft-deleted ISBNs can be reused; added `deleteSetsDeletedFlag` service test and `softDeleteAllowsIsbnReuse` integration test. |
+| Outcome    | Soft delete working — 21 tests total.                                                                                                                                                                                                                 |
+
 ## Coverage gap (honest note)
 
 As of writing this log, JaCoCo **is** wired in `pom.xml` (added in
-S9) with an 80% line-coverage gate; the build is at **~92%
-instruction coverage**, well above the gate.
+S9) with an 80% line-coverage gate. The build passes at **93%
+instruction coverage / 96% line coverage** (LINE gate rule),
+well above the threshold.

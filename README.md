@@ -1,6 +1,6 @@
 # Book Catalog Service
 
-A small REST API for managing a bookDO catalog, built with Spring Boot 3,
+A small REST API for managing a book catalog, built with Spring Boot 3,
 Spring Data JPA, and an H2 in-memory database.
 
 ## Requirements
@@ -32,15 +32,15 @@ All endpoints are public (no authentication).
 | Method | Path                  | Description                      |
 |--------|-----------------------|----------------------------------|
 | GET    | `/api/v1/books`       | List books (paged)               |
-| GET    | `/api/v1/books/{id}`  | Get a bookDO by id                 |
-| POST   | `/api/v1/books`       | Create a bookDO                    |
-| PUT    | `/api/v1/books/{id}`  | Update a bookDO                    |
-| DELETE | `/api/v1/books/{id}`  | Delete a bookDO                    |
+| GET    | `/api/v1/books/{id}`  | Get a book by id                   |
+| POST   | `/api/v1/books`       | Create a book                      |
+| PUT    | `/api/v1/books/{id}`  | Update a book                      |
+| DELETE | `/api/v1/books/{id}`  | Delete a book                      |
 
 ### Example
 
 ```bash
-# Create a bookDO
+# Create a book
 curl -s -X POST http://localhost:8080/api/v1/books \
   -H 'Content-Type: application/json' \
   -d '{"title":"Dune","author":"Frank Herbert","isbn":"9780441172719","publishedYear":1965}'

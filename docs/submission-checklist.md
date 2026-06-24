@@ -31,18 +31,24 @@ location / code / extension points).
 
 ## 3. Unit + API tests, ≥ 80% coverage
 
-- [x] Unit tests on the service layer (5 in `BookDOServiceTest`)
+- [x] Unit tests on the service layer (7 in `BookServiceTest`)
 - [x] Unit tests on the model layer (2 in `BookDOTest` — covers
       `@PrePersist` callback)
-- [x] API / slice tests on the controller layer (5 in `BookDOControllerTest`)
-- [x] **Integration tests** covering the full HTTP stack (5 in
+- [x] API / slice tests on the controller layer (6 in `BookControllerTest`)
+- [x] **Integration tests** covering the full HTTP stack (6 in
       `BookIntegrationTest` — `@SpringBootTest`, real H2, real JPA,
       real `GlobalExceptionHandler`, real JSON serialization)
-- [x] All tests pass: `mvn verify` → `Tests run: 17, Failures: 0, Errors: 0`
-- [x] **JaCoCo 80% line-coverage gate wired and passing** (current
-      ~92% instruction coverage; gate rule is on `LINE`)
+- [x] All tests pass: `mvn verify` → `Tests run: 21, Failures: 0, Errors: 0`
 
-**Evidence:** `src/test/java/com/example/bookcatalog/`,
+> Coverage: 93% instruction, 96% line, 75% branch.
+- [x] **JaCoCo 80% line-coverage gate wired and passing** (current
+      **93%** instruction coverage, **96%** line coverage; gate rule is on `LINE`)
+
+**Evidence:**
+`src/test/java/com/example/bookcatalog/service/BookServiceTest.java`,
+`src/test/java/com/example/bookcatalog/controller/BookControllerTest.java`,
+`src/test/java/com/example/bookcatalog/integration/BookIntegrationTest.java`,
+`src/test/java/com/example/bookcatalog/model/BookDOTest.java`,
 `target/surefire-reports/`, `target/site/jacoco/index.html`.
 
 **To verify:**

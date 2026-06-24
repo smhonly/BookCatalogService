@@ -17,7 +17,9 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.List;
 
+import com.example.bookcatalog.exception.ResourceNotFoundException;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -33,7 +35,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
  */
 @WebMvcTest(BookController.class)
 @AutoConfigureMockMvc(addFilters = false)
-class BookDOControllerTest {
+class BookControllerTest {
 
     @Autowired
     private MockMvc mockMvc;
@@ -97,5 +99,15 @@ class BookDOControllerTest {
     void deleteReturns204() throws Exception {
         mockMvc.perform(delete("/api/v1/books/1"))
                 .andExpect(status().isNoContent());
+    }
+
+    @Test
+    void deleteReturns404WhenMissing() throws Exception {
+        doThrow(new ResourceNotFoundException("Book", 99L))
+                .when(bookService).delete(99L);
+
+        mockMvc.perform(delete("/api/v1/books/99"))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.status").value(404));
     }
 }

@@ -23,7 +23,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-class BookDOServiceTest {
+class BookServiceTest {
 
     @Mock
     private BookRepository bookRepository;
@@ -94,6 +94,24 @@ class BookDOServiceTest {
         assertThat(captor.getValue().getTitle()).isEqualTo("Effective Java, 3rd ed.");
         assertThat(captor.getValue().getId()).isEqualTo(1L);
         assertThat(updated.getTitle()).isEqualTo("Effective Java, 3rd ed.");
+    }
+
+    @Test
+    void deleteThrowsWhenMissing() {
+        when(bookRepository.findById(99L)).thenReturn(Optional.empty());
+
+        assertThatThrownBy(() -> bookService.delete(99L))
+                .isInstanceOf(ResourceNotFoundException.class)
+                .hasMessageContaining("99");
+    }
+
+    @Test
+    void deleteSetsDeletedFlag() {
+        when(bookRepository.findById(1L)).thenReturn(Optional.of(sample));
+
+        bookService.delete(1L);
+
+        assertThat(sample.isDeleted()).isTrue();
     }
 
     @Test

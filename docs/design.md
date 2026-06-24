@@ -70,7 +70,7 @@ public record BookRequest(
 public record BookResponse(Long id, String title, String author,
                            String isbn, Integer publishedYear,
                            Instant createdAt) {
-    public static BookResponse from(Book bookDO) { ... }
+    public static BookResponse from(BookDO bookDO) { ... }
 }
 ```
 `BookController` accepts `BookRequest` and returns `Page<BookResponse>`

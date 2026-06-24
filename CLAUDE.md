@@ -36,7 +36,7 @@ public API surface and `docs/spec.md` for the assignment requirements.
 mvn spring-boot:run               # run the service on :8080
 mvn test                          # run all tests
 mvn test -Dtest=BookServiceTest   # run a single test class
-mvn test -Dtest=BookServiceTest#createPersistsBookWhenIsbnIsUnique  # one method
+mvn test "-Dtest=BookServiceTest#createPersistsBookWhenIsbnIsUnique"  # one method
 mvn -DskipTests package           # build the jar without running tests
 mvn compile                       # quick compile check
 ```
@@ -71,7 +71,7 @@ exception/   Domain exceptions + @RestControllerAdvice that maps them to HTTP st
 ## Conventions
 
 - **DTOs at the boundary.** Don't return JPA entities from controllers. Use
-  the `BookResponse.from(Book)` factory.
+  the `BookResponse.from(BookDO)` factory.
 - **Records for DTOs, Lombok for entities.** DTOs are immutable Java records;
   entities use Lombok (`@Getter`, `@Setter`, `@Builder`, `@NoArgsConstructor`).
 - **Validation** lives on the request DTOs (`@NotBlank`, `@Size`, etc.) and is

@@ -73,7 +73,7 @@ Response body shape:
 | -------- | ---------------------------------- |
 | Path var | `id` (long)                        |
 | Response | `200 OK` with a single `BookResponse` |
-| Errors   | `404` if no bookDO with that id      |
+| Errors   | `404` if no book with that id        |
 
 ### `POST /api/v1/books` — create
 
@@ -94,7 +94,7 @@ Request body (`BookRequest`):
 ```
 
 - `title` and `author` — required, non-blank, ≤ 200 / 120 chars
-- `isbn` — optional, ≤ 20 chars, must be unique across the table
+- `isbn` — optional, ≤ 20 chars, must be unique across all books
 - `publishedYear` — optional integer, must be ≥ 0
 
 ### `PUT /api/v1/books/{id}` — update
@@ -104,20 +104,24 @@ Request body (`BookRequest`):
 | Path var | `id` (long)                                                          |
 | Request  | `BookRequest` body (same shape as create)                            |
 | Response | `200 OK` with the updated `BookResponse`                             |
-| Errors   | `400` validation failure, `404` bookDO missing, `409` ISBN collision   |
+| Errors   | `400` validation failure, `404` book missing, `409` ISBN collision     |
 
 The id in the path is the row to update; the body's fields replace
 the existing values. Supplying the same ISBN the row already has is
 not a conflict — the service treats it as a no-op for the
 uniqueness check.
 
-### `DELETE /api/v1/books/{id}` — delete
+### `DELETE /api/v1/books/{id}` — soft-delete
+
+Sets a `deleted` flag on the row. The record is preserved in the
+database but excluded from all subsequent queries (`GET`, `LIST`,
+`PUT`). A soft-deleted row's ISBN becomes reusable.
 
 | Aspect   | Value                          |
 | -------- | ------------------------------ |
 | Path var | `id` (long)                    |
 | Response | `204 No Content` (empty body)  |
-| Errors   | `404` if no bookDO with that id  |
+| Errors   | `404` if no book with that id    |
 
 ## Status code matrix
 
@@ -128,7 +132,7 @@ uniqueness check.
 | 204  | Successful delete (`DELETE`). No body.                                     |
 | 400  | Request body fails bean validation on `BookRequest` (`@NotBlank`, `@Size`, `@Min`). The `message` lists the offending fields. |
 | 404  | Book id does not exist (single get / update / delete).                     |
-| 409  | The supplied `isbn` is already used by a different bookDO (create / update). |
+| 409  | The supplied `isbn` is already used by a different book (create / update). |
 
 ## Example session
 
