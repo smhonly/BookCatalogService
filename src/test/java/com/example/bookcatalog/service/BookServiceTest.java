@@ -12,6 +12,7 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.orm.ObjectOptimisticLockingFailureException;
 
 import java.util.Optional;
 
@@ -46,7 +47,7 @@ class BookServiceTest {
 
     @Test
     void createPersistsBookWhenIsbnIsUnique() {
-        BookRequest request = new BookRequest("Effective Java", "Joshua Bloch", "9780134685991", 2018);
+        BookRequest request = new BookRequest("Effective Java", "Joshua Bloch", "9780134685991", 2018, null);
         when(bookRepository.findByIsbn("9780134685991")).thenReturn(Optional.empty());
         when(bookRepository.save(any(BookDO.class))).thenAnswer(inv -> inv.getArgument(0));
 
@@ -61,7 +62,7 @@ class BookServiceTest {
 
     @Test
     void createRejectsDuplicateIsbn() {
-        BookRequest request = new BookRequest("Effective Java", "Joshua Bloch", "9780134685991", 2018);
+        BookRequest request = new BookRequest("Effective Java", "Joshua Bloch", "9780134685991", 2018, null);
         when(bookRepository.findByIsbn("9780134685991")).thenReturn(Optional.of(sample));
 
         assertThatThrownBy(() -> bookService.create(request))
@@ -81,8 +82,9 @@ class BookServiceTest {
 
     @Test
     void updateUpdatesBookFields() {
+        sample.setVersion(1L);
         BookRequest request = new BookRequest(
-                "Effective Java, 3rd ed.", "Joshua Bloch", "9780134685991", 2018);
+                "Effective Java, 3rd ed.", "Joshua Bloch", "9780134685991", 2018, 1L);
         when(bookRepository.findById(1L)).thenReturn(Optional.of(sample));
         when(bookRepository.findByIsbn("9780134685991")).thenReturn(Optional.empty());
         when(bookRepository.save(any(BookDO.class))).thenAnswer(inv -> inv.getArgument(0));
@@ -122,13 +124,25 @@ class BookServiceTest {
                 .author("Someone Else")
                 .isbn("9999999999999")
                 .build();
-        BookRequest request = new BookRequest("Effective Java", "Joshua Bloch", "9999999999999", 2018);
+        BookRequest request = new BookRequest("Effective Java", "Joshua Bloch", "9999999999999", 2018, null);
 
         when(bookRepository.findById(1L)).thenReturn(Optional.of(sample));
         when(bookRepository.findByIsbn("9999999999999")).thenReturn(Optional.of(other));
 
         assertThatThrownBy(() -> bookService.update(1L, request))
                 .isInstanceOf(DuplicateResourceException.class);
+
+        verify(bookRepository, never()).save(any());
+    }
+
+    @Test
+    void updateRejectsStaleVersion() {
+        sample.setVersion(2L);
+        BookRequest request = new BookRequest("Effective Java", "Joshua Bloch", "9780134685991", 2018, 1L);
+        when(bookRepository.findById(1L)).thenReturn(Optional.of(sample));
+
+        assertThatThrownBy(() -> bookService.update(1L, request))
+                .isInstanceOf(ObjectOptimisticLockingFailureException.class);
 
         verify(bookRepository, never()).save(any());
     }

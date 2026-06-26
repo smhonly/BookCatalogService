@@ -125,6 +125,15 @@
 | Changes    | Added `deleted` boolean field on `BookDO` with `@SQLRestriction("deleted = false")` to auto-filter all queries; changed `BookService.delete()` to `get(id)` + `setDeleted(true)`; removed `@Column(unique = true)` on ISBN so soft-deleted ISBNs can be reused; added `deleteSetsDeletedFlag` service test and `softDeleteAllowsIsbnReuse` integration test. |
 | Outcome    | Soft delete working — 21 tests total.                                                                                                                                                                                                                 |
 
+### S12 — Static Factory Method pattern doc (2026-06-26)
+
+| Field      | Value                                                                                                                                                             |
+| ---------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Trigger    | User asked whether there are other patterns beyond the 3 documented; identified `BookResponse.from(BookDO)` as Static Factory Method, then asked to add it to docs. |
+| Changes    | Added "Static Factory Method" section to `docs/design.md` (problem → where → code → extension points format).                                                      |
+| Edited     | `docs/design.md` — new section between Builder and Patterns considered and rejected.                                                                              |
+| Outcome    | 4 design patterns documented; 23 tests still pass.                                                                                                                |
+
 ## Coverage gap (honest note)
 
 As of writing this log, JaCoCo **is** wired in `pom.xml` (added in

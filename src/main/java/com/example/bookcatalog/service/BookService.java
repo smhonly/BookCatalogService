@@ -8,6 +8,7 @@ import com.example.bookcatalog.repository.BookRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.orm.ObjectOptimisticLockingFailureException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -37,6 +38,9 @@ public class BookService {
     @Transactional
     public BookDO update(Long id, BookRequest request) {
         BookDO bookDO = get(id);
+        if (request.version() != null && !request.version().equals(bookDO.getVersion())) {
+            throw new ObjectOptimisticLockingFailureException(BookDO.class, id);
+        }
         assertIsbnUnique(request.isbn(), id);
         bookDO.setTitle(request.title());
         bookDO.setAuthor(request.author());

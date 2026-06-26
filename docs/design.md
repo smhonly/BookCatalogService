@@ -135,6 +135,49 @@ of mystery positional arguments.
 
 ---
 
+## 4. Static Factory Method
+
+**Problem.** Clients of `BookResponse` need a way to create an instance
+from a `BookDO` entity. A constructor (`new BookResponse(...)`) works,
+but it exposes internal field ordering, makes the caller responsible
+for extraction logic, and cannot convey semantic intent ("build this
+response *from* an entity"). If the mapping logic ever needs caching,
+subclassing, or null-safety, a constructor provides no extension point.
+
+**Where it lives.**
+`src/main/java/com/example/bookcatalog/dto/BookResponse.java` — the
+`from(BookDO)` static method.
+
+**Current code.**
+```java
+public static BookResponse from(BookDO bookDO) {
+    return new BookResponse(
+            bookDO.getId(),
+            bookDO.getTitle(),
+            bookDO.getAuthor(),
+            bookDO.getIsbn(),
+            bookDO.getPublishedYear(),
+            bookDO.getVersion(),
+            bookDO.getCreatedAt(),
+            bookDO.getCreatedBy(),
+            bookDO.getUpdatedAt(),
+            bookDO.getUpdatedBy()
+    );
+}
+```
+The static factory has a descriptive name (`from`), lives on the
+type it returns, and centralises the entity-to-DTO mapping in one
+place. Callers write `BookResponse.from(bookDO)` instead of
+`new BookResponse(bookDO.getId(), ...)`.
+
+**Extension points.**
+
+- Add null-safe defaults (e.g. `bookDO.getUpdatedBy() == null ? "system" : bookDO.getUpdatedBy()`) — one place, not every call site.
+- Add caching or memoisation if the same entity is mapped repeatedly in a single request.
+- Return a subtype (e.g. `BookResponseV2 extends BookResponse`) without changing callers — only the factory method body changes.
+
+---
+
 ## Patterns considered and rejected
 
 - **Strategy / Specification** for search — would have been appropriate

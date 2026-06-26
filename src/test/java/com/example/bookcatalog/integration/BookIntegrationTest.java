@@ -43,7 +43,7 @@ class BookIntegrationTest {
     @Test
     void fullCrudLifecycle() {
         // Create
-        BookRequest create = new BookRequest("Dune", "Frank Herbert", "9780441172719", 1965);
+        BookRequest create = new BookRequest("Dune", "Frank Herbert", "9780441172719", 1965, null);
         ResponseEntity<Map> created = rest.postForEntity("/api/v1/books", create, Map.class);
         assertThat(created.getStatusCode()).isEqualTo(HttpStatus.CREATED);
         Long id = ((Number) created.getBody().get("id")).longValue();
@@ -51,11 +51,13 @@ class BookIntegrationTest {
         assertThat(created.getBody()).containsEntry("title", "Dune");
         assertThat(created.getBody()).containsEntry("isbn", "9780441172719");
         assertThat(created.getBody()).containsKey("createdAt"); // @PrePersist fired
+        assertThat(created.getBody()).containsKey("version");
 
         // Read one
         ResponseEntity<Map> fetched = rest.getForEntity("/api/v1/books/" + id, Map.class);
         assertThat(fetched.getStatusCode()).isEqualTo(HttpStatus.OK);
         assertThat(fetched.getBody()).containsEntry("id", id.intValue());
+        assertThat(fetched.getBody()).containsKey("version");
 
         // List
         ResponseEntity<Map> list = rest.getForEntity("/api/v1/books?page=0&size=10", Map.class);
@@ -63,7 +65,8 @@ class BookIntegrationTest {
         assertThat((List<?>) list.getBody().get("content")).hasSize(1);
 
         // Update — same ISBN should not be a conflict (covers assertIsbnUnique excludeId branch)
-        BookRequest update = new BookRequest("Dune (1965)", "Frank Herbert", "9780441172719", 1965);
+        Long version = ((Number) created.getBody().get("version")).longValue();
+        BookRequest update = new BookRequest("Dune (1965)", "Frank Herbert", "9780441172719", 1965, version);
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
         ResponseEntity<Map> updated = rest.exchange(
@@ -95,10 +98,10 @@ class BookIntegrationTest {
     @Test
     void createDuplicateIsbnReturns409() {
         rest.postForEntity("/api/v1/books",
-                new BookRequest("A", "X", "9780441172719", 2000), Map.class);
+                new BookRequest("A", "X", "9780441172719", 2000, null), Map.class);
 
         ResponseEntity<Map> resp = rest.postForEntity("/api/v1/books",
-                new BookRequest("B", "Y", "9780441172719", 2001), Map.class);
+                new BookRequest("B", "Y", "9780441172719", 2001, null), Map.class);
 
         assertThat(resp.getStatusCode()).isEqualTo(HttpStatus.CONFLICT);
         assertThat(resp.getBody()).containsEntry("status", 409);
@@ -107,7 +110,7 @@ class BookIntegrationTest {
 
     @Test
     void createBlankTitleReturns400() {
-        BookRequest bad = new BookRequest("", "Some Author", "1234567890123", 2020);
+        BookRequest bad = new BookRequest("", "Some Author", "1234567890123", 2020, null);
         ResponseEntity<Map> resp = rest.postForEntity("/api/v1/books", bad, Map.class);
 
         assertThat(resp.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
@@ -118,7 +121,7 @@ class BookIntegrationTest {
     @Test
     void softDeleteAllowsIsbnReuse() {
         // Create and delete a book
-        BookRequest req = new BookRequest("Dune", "Frank Herbert", "9780441172719", 1965);
+        BookRequest req = new BookRequest("Dune", "Frank Herbert", "9780441172719", 1965, null);
         ResponseEntity<Map> created = rest.postForEntity("/api/v1/books", req, Map.class);
         Long id = ((Number) created.getBody().get("id")).longValue();
 
@@ -127,6 +130,25 @@ class BookIntegrationTest {
         // Same ISBN should be reusable after soft delete
         ResponseEntity<Map> recreated = rest.postForEntity("/api/v1/books", req, Map.class);
         assertThat(recreated.getStatusCode()).isEqualTo(HttpStatus.CREATED);
+    }
+
+    @Test
+    void updateWithStaleVersionReturns409() {
+        BookRequest create = new BookRequest("Dune", "Frank Herbert", "9780441172719", 1965, null);
+        ResponseEntity<Map> created = rest.postForEntity("/api/v1/books", create, Map.class);
+        Long id = ((Number) created.getBody().get("id")).longValue();
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+
+        // Use a stale version (0) — the real version will be 0 or 1, so use -1 to guarantee staleness
+        BookRequest update = new BookRequest("Dune (1965)", "Frank Herbert", "9780441172719", 1965, -1L);
+        ResponseEntity<Map> updated = rest.exchange(
+                "/api/v1/books/" + id, HttpMethod.PUT,
+                new HttpEntity<>(update, headers), Map.class);
+
+        assertThat(updated.getStatusCode()).isEqualTo(HttpStatus.CONFLICT);
+        assertThat(updated.getBody()).containsEntry("status", 409);
     }
 
     @Test

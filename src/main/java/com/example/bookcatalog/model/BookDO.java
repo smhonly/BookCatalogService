@@ -60,7 +60,6 @@ public class BookDO {
     private Instant updatedAt;
 
     @Version
-    @Setter(AccessLevel.NONE)
     private Long version;
 
     @PrePersist

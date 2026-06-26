@@ -70,7 +70,7 @@ class BookControllerTest {
 
     @Test
     void createReturns201WithLocationHeader() throws Exception {
-        BookRequest request = new BookRequest("Dune", "Frank Herbert", "9780441172719", 1965);
+        BookRequest request = new BookRequest("Dune", "Frank Herbert", "9780441172719", 1965, null);
         BookDO saved = BookDO.builder().id(42L).title("Dune").author("Frank Herbert").build();
         when(bookService.create(any())).thenReturn(saved);
 
@@ -84,7 +84,7 @@ class BookControllerTest {
 
     @Test
     void updateReturnsUpdatedBook() throws Exception {
-        BookRequest request = new BookRequest("Dune", "Frank Herbert", "9780441172719", 1965);
+        BookRequest request = new BookRequest("Dune", "Frank Herbert", "9780441172719", 1965, 1L);
         BookDO updated = BookDO.builder().id(1L).title("Dune").author("Frank Herbert").build();
         when(bookService.update(any(), any())).thenReturn(updated);
 
